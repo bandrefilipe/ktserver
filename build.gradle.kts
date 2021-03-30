@@ -23,6 +23,7 @@ repositories {
 }
 
 extra["springCloudVersion"] = "2020.0.2"
+extra["kotlinLoggingVersion"] = "2.0.6"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
@@ -33,6 +34,9 @@ dependencies {
     implementation("org.springframework.cloud:spring-cloud-starter-sleuth")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+    // https://github.com/MicroUtils/kotlin-logging
+    implementation("io.github.microutils:kotlin-logging-jvm:${property("kotlinLoggingVersion")}")
 }
 
 dependencyManagement {
