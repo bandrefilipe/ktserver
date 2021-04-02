@@ -1,4 +1,4 @@
-package io.bandrefilipe.ktserver.api
+package io.bandrefilipe.ktserver.rest
 
 import io.bandrefilipe.ktserver.application.GreetingUseCase
 import mu.KotlinLogging
@@ -12,9 +12,8 @@ private val log = KotlinLogging.logger {}
 
 @RestController
 @RequestMapping(path = ["/greeting"])
-private class GreetingController(
-    @Autowired
-    private val greetingUseCase: GreetingUseCase
+class GreetingController(
+    @Autowired private val greetingUseCase: GreetingUseCase
 ) {
 
     init {

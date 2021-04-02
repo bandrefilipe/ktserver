@@ -7,9 +7,8 @@ plugins {
     kotlin("plugin.spring") version "1.4.31"
 }
 
-group = "io.bandrefilipe"
-version = "0.0.1-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_11
+java.targetCompatibility = JavaVersion.VERSION_11
 
 configurations {
     compileOnly {
@@ -17,41 +16,104 @@ configurations {
     }
 }
 
-repositories {
-    mavenCentral()
-    jcenter()
-}
-
 extra["springCloudVersion"] = "2020.0.2"
 extra["kotlinLoggingVersion"] = "2.0.6"
 
-dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("org.springframework.cloud:spring-cloud-starter-sleuth")
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
+allprojects {
+    apply(plugin = "org.springframework.boot")
+    apply(plugin = "io.spring.dependency-management")
+    apply(plugin = "org.jetbrains.kotlin.jvm")
+    apply(plugin = "org.jetbrains.kotlin.plugin.spring")
 
-    // https://github.com/MicroUtils/kotlin-logging
-    implementation("io.github.microutils:kotlin-logging-jvm:${property("kotlinLoggingVersion")}")
-}
+    group = "io.bandrefilipe"
+    version = "0.0.1-SNAPSHOT"
 
-dependencyManagement {
-    imports {
-        mavenBom("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}")
+
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+
+    dependencyManagement {
+        imports {
+            mavenBom("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}")
+        }
+    }
+
+    tasks.withType<KotlinCompile> {
+        kotlinOptions {
+            freeCompilerArgs = listOf("-Xjsr305=strict")
+            jvmTarget = "11"
+        }
+    }
+
+    tasks.withType<Test> {
+        useJUnitPlatform()
     }
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        freeCompilerArgs = listOf("-Xjsr305=strict")
-        jvmTarget = "11"
+subprojects {
+    apply(plugin = "java-library")
+}
+
+project(":application") {
+    dependencies {
+        api(project(":commons"))
     }
 }
 
-tasks.withType<Test> {
-    useJUnitPlatform()
+project(":commons") {
+    dependencies {
+        annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+
+        // https://github.com/MicroUtils/kotlin-logging
+        api("io.github.microutils:kotlin-logging-jvm:${property("kotlinLoggingVersion")}")
+        // Default https://start.spring.io/ dependencies for Kotlin
+        api("org.springframework.boot:spring-boot-starter")
+        api("org.jetbrains.kotlin:kotlin-reflect")
+        api("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+        testImplementation("org.springframework.boot:spring-boot-starter-test")
+    }
+}
+
+project(":configuration") {
+    apply(plugin = "application")
+
+    dependencies {
+        implementation(project(":application"))
+        implementation(project(":graphql-api"))
+        implementation(project(":grpc-api"))
+        implementation(project(":persistence"))
+        implementation(project(":rest-api"))
+
+        implementation("org.springframework.boot:spring-boot-starter-actuator")
+        implementation("org.springframework.cloud:spring-cloud-starter-sleuth")
+    }
+}
+
+project(":graphql-api") {
+    dependencies {
+        implementation(project(":application"))
+    }
+}
+
+project(":grpc-api") {
+    dependencies {
+        implementation(project(":application"))
+    }
+}
+
+project(":persistence") {
+    dependencies {
+        implementation(project(":application"))
+    }
+}
+
+project(":rest-api") {
+    dependencies {
+        implementation(project(":application"))
+
+        implementation("org.springframework.boot:spring-boot-starter-web")
+        implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    }
 }
