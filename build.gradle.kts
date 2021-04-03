@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
     id("org.springframework.boot") version "2.4.4"
@@ -19,6 +20,24 @@ configurations {
 extra["springCloudVersion"] = "2020.0.2"
 extra["kotlinLoggingVersion"] = "2.0.6"
 
+tasks.withType<BootJar> {
+    if (rootProject == project) {
+        enabled = true
+        mainClass.set("io.bandrefilipe.ktserver.KtServerApplication")
+    }
+}
+
+dependencies {
+    implementation(project(":application"))
+    implementation(project(":graphql-api"))
+    implementation(project(":grpc-api"))
+    implementation(project(":persistence"))
+    implementation(project(":rest-api"))
+
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.cloud:spring-cloud-starter-sleuth")
+}
+
 allprojects {
     apply(plugin = "org.springframework.boot")
     apply(plugin = "io.spring.dependency-management")
@@ -27,7 +46,6 @@ allprojects {
 
     group = "io.bandrefilipe"
     version = "0.0.1-SNAPSHOT"
-
 
     repositories {
         mavenCentral()
@@ -50,10 +68,23 @@ allprojects {
     tasks.withType<Test> {
         useJUnitPlatform()
     }
+
+    tasks.withType<Jar> {
+        enabled = true
+        val archiveFileNamePrefix = when (rootProject) {
+            project -> project.name
+            else -> "${rootProject.name}-${project.name}"
+        }
+        archiveFileName.set("$archiveFileNamePrefix-${project.version}.${archiveExtension.get()}")
+    }
 }
 
 subprojects {
     apply(plugin = "java-library")
+
+    tasks.withType<BootJar> {
+        enabled = false
+    }
 }
 
 project(":application") {
@@ -73,21 +104,6 @@ project(":commons") {
         api("org.jetbrains.kotlin:kotlin-reflect")
         api("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
         testImplementation("org.springframework.boot:spring-boot-starter-test")
-    }
-}
-
-project(":configuration") {
-    apply(plugin = "application")
-
-    dependencies {
-        implementation(project(":application"))
-        implementation(project(":graphql-api"))
-        implementation(project(":grpc-api"))
-        implementation(project(":persistence"))
-        implementation(project(":rest-api"))
-
-        implementation("org.springframework.boot:spring-boot-starter-actuator")
-        implementation("org.springframework.cloud:spring-cloud-starter-sleuth")
     }
 }
 
