@@ -23,7 +23,7 @@ extra["kotlinLoggingVersion"] = "2.0.6"
 tasks.withType<BootJar> {
     if (rootProject == project) {
         enabled = true
-        mainClass.set("io.bandrefilipe.ktserver.KtServerApplication")
+        mainClass.set("io.bandrefilipe.ktserver.KtServerApplicationKt")
     }
 }
 
