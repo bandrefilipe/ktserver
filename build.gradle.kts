@@ -94,6 +94,8 @@ project(":application") {
 }
 
 project(":commons") {
+    extra["apacheCommonsCodecVersion"] = "1.15"
+
     dependencies {
         annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
@@ -104,6 +106,8 @@ project(":commons") {
         api("org.jetbrains.kotlin:kotlin-reflect")
         api("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
         testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+        implementation("commons-codec:commons-codec:${property("apacheCommonsCodecVersion")}")
     }
 }
 
@@ -122,6 +126,9 @@ project(":grpc-api") {
 project(":persistence") {
     dependencies {
         implementation(project(":application"))
+
+        implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+        runtimeOnly("org.postgresql:postgresql")
     }
 }
 
